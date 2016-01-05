@@ -115,10 +115,11 @@ namespace eval ::richtext-xinha {
         
     } {
         #
-        # In case no xinha instances are created, nothing has to be
-        # done.
+        # In case no xinha instances are created, or we are on a
+        # mobile browser, which is not supported via xinha, nothing
+        # has to be done (i.e. the plain text area will be shown)
         #
-        if {![info exists ::acs_blank_master(xinha)]} {
+        if {![info exists ::acs_blank_master(xinha)] || [ad_conn mobile_p]} {
             return
         }
         set ::xinha_dir /resources/richtext-xinha/xinha-nightly/

@@ -9,13 +9,14 @@
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
     
-    <version name="0.2" url="http://openacs.org/repository/download/apm/richtext-xinha-0.2.apm">
+    <version name="0.3" url="http://openacs.org/repository/download/apm/richtext-xinha-0.3.apm">
         <owner url="mailto:neumann@wu-wien.ac.at">Gustaf Neumann</owner>
         <summary>Richtext editor plugin for integrating Xinha with acs-templating</summary>
         <maturity>0</maturity>
 
-        <provides url="richtext-xinha" version="0.2"/>
+        <provides url="richtext-xinha" version="0.3"/>
 	<requires url="acs-templating" version="5.9.1d2"/>
+	<requires url="acs-tcl" version="5.9.1d3"/>
 
         <callbacks>
         </callbacks>
