@@ -12,7 +12,7 @@ ad_library {
     @cvs-id $Id$
 }
 
-namespace eval ::richtext-xinha {
+namespace eval ::richtext::xinha {
     
     ad_proc initialize_widget {
         -form_id
