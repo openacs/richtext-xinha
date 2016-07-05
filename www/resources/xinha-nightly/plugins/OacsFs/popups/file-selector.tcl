@@ -210,7 +210,26 @@ set filter_clause [expr {$file_types eq "*" ? "" :
 db_multirow -extend { 
   icon last_modified_pretty content_size_pretty 
   properties_link properties_url folder_p title
-} contents get_fs_contents {} {
+} contents get_fs_contents {
+    select object_id, name, live_revision, type, title,
+	   to_char(last_modified, 'YYYY-MM-DD HH24:MI:SS') as last_modified_ansi,
+	   content_size, url, sort_key, file_upload_name,
+	   case
+	     when :folder_path is null
+	     then fs_objects.name
+	     else :folder_path || '/' || name
+	   end as file_url,
+	   case
+	     when last_modified >= (now() - cast('99999' as interval))
+	     then 1
+	     else 0
+	   end as new_p
+	from fs_objects
+	where parent_id = :folder_id
+	and acs_permission.permission_p(fs_objects.object_id, :user_id, 'read')
+	$filter_clause
+	$order_by_clause
+} {
   set last_modified_ansi [lc_time_system_to_conn $last_modified_ansi]
   set last_modified_pretty [lc_time_fmt $last_modified_ansi "%x %X"]
   set content_size_pretty [lc_numeric $content_size]
