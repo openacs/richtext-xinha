@@ -90,7 +90,7 @@ namespace eval ::richtext::xinha {
             append xinha_options "xinha_config.key = '$key';\n"
         }
         
-        if {[dict exists options javascript]} {
+        if {[dict exists $options javascript]} {
             append xinha_options [dict get $options javascript] \n
         }
 
