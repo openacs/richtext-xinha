@@ -83,7 +83,7 @@ namespace eval ::richtext::xinha {
         # Pass as well the actual package_id to xinha (for e.g. plugins)
         #
         append xinha_options "xinha_config.package_id = '[ad_conn package_id]';\n"
-        
+
         # DAVEB find out if there is a key datatype in the form
         if {[info exists ::af_key_name($form_id)]} {
             set key [template::element get_value $form_id $::af_key_name($form_id)]
@@ -97,6 +97,13 @@ namespace eval ::richtext::xinha {
         #ns_log notice "final ::acs_blank_master(xinha.options):\n$xinha_options"
         set ::acs_blank_master(xinha.options) $xinha_options
 
+        #
+        # add required directives for content security policies
+        #
+        security::csp::require script-src 'unsafe-eval'
+        security::csp::require script-src 'unsafe-inline'
+
+        
         return ""
     }
 
@@ -167,9 +174,8 @@ namespace eval ::richtext::xinha {
          }
          //window.onload = xinha_init;
       "
-
-        template::add_body_handler -event onload -script "xinha_init();"
-        template::add_script -src ${::xinha_dir}XinhaCore.js -section body
+        template::add_body_script -src ${::xinha_dir}XinhaCore.js
+        template::add_body_script -script "xinha_init();"
     }
 
 }
