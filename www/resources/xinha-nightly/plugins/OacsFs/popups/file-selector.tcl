@@ -280,15 +280,27 @@ db_multirow -extend {
   #
   # Register listeners
   #
-  ad_proc template::add_event_listener -id "oi$object_id" -script [subst {
-    onPreview('$file_url','$type');
+  template::add_event_listener -id "oi$object_id" -script [subst {
+      onPreview('$file_url','$type');
   }]
   if {$folder_p == 0} {
-    ad_proc template::add_event_listener -id "link$object_id" -script [subst {
-      selectImage('$object_id','$file_url','$type');
-    }]
+      template::add_event_listener -id "link$object_id" -script [subst {
+          selectImage('$object_id','$file_url','$type');
+      }]
   }
+  
 }
+
+template::add_event_listener -id "body" -event "blur" -script {
+    window.focus();
+}
+template::add_event_listener -id "ok_button" -script {
+    onOK();
+}
+template::add_event_listener -id "cancel_button" -script {
+    onCancel();
+}
+
 
 set HTML_NothingSelected [_ acs-templating.HTMLArea_SelectImageNothingSelected]
 switch $selector_type {

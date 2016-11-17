@@ -1,6 +1,5 @@
-<html>
-<head>
-  <title>@HTML_Title@</title>
+<master src="/www/blank-master">
+<property name="doc(title)">@HTML_Title@</property>
   <link rel="stylesheet" type="text/css" 
 	href="/resources/acs-templating/lists.css" media="all">
   <link rel="stylesheet" type="text/css" 
@@ -30,8 +29,6 @@ function onOK() {
     }
 };
 
-
-			
 function onCancel() {
     window.close();
 };
@@ -89,7 +86,7 @@ select, input, button { font: 11px Tahoma,Verdana,sans-serif; }
 </style>
 		
 </head>
-<body onBlur="window.focus();">
+<body id="body">
   <div class="title">@HTML_Title@</div>
   <div style="border-bottom:1px solid #000000;font-weight:bold;margin-bottom: 5px;">@HTML_Context@</div>
 
@@ -149,8 +146,8 @@ select, input, button { font: 11px Tahoma,Verdana,sans-serif; }
 <tr>
   <td>
     <div style="margin-top: 10px; text-align: right;">
-      <button type="button" name="ok" onclick="return onOK();"> #acs-kernel.common_OK# </button>
-      <button type="button" name="cancel" onclick="return onCancel();">#acs-templating.HTMLArea_action_cancel#</button>
+      <button id="ok_button" type="button" name="ok"> #acs-kernel.common_OK# </button>
+      <button id="cancel_button" type="button" name="cancel">#acs-templating.HTMLArea_action_cancel#</button>
     </div>						
   </td>
 </tr>
