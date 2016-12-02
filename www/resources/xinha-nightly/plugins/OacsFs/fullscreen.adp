@@ -115,7 +115,15 @@
     </script>
     <style type="text/css"> html, body { height: 100%; margin: 0px; border: 0px; background-color: buttonface; } </style>
   </head>
-  <body scroll="no" onload="setTimeout(function(){init();}, 500)" onunload="update_parent()">
+  <body scroll="no">
+    <script type="text/javascript"<if @::__csp_nonce@ not nil> nonce="@::__csp_nonce;literal@"</if>>
+      document.body.addEventListener('load', function (event) {
+          setTimeout(function(){init();}, 500);
+      }, false);
+      document.body.addEventListener('unload', function (event) {
+          update_parent();
+      }, false);
+    </script>
     <form style="margin: 0px; border: 1px solid; border-color: threedshadow threedhighlight threedhighlight threedshadow;">
       <textarea name="editor" id="editor" style="width:100%; height:300px">&nbsp;</textarea>
     </form>
