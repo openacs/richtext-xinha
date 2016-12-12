@@ -2,29 +2,29 @@
 <html>
   <head>
     <title>Fullscreen HTMLArea</title>
-    <script type="text/javascript">
+    <script type="text/javascript" <if @::__csp_nonce@ not nil> nonce="@::__csp_nonce;literal@"</if>>
       // the _editor_url is REQUIRED!  don't forget to set it.
-     	 _editor_url = "/resources/acs-templating/xinha-nightly/";
+      _editor_url = "/resources/acs-templating/xinha-nightly/";
       // implicit language will be "en", but let's set it for brevity
       _editor_lang = "de";
     </script>
    <script type="text/javascript" src="../../htmlarea.js"></script>
    <script type="text/javascript" src="../../lang/@htmlarea_lang_file@.js"></script>
-  <script type="text/javascript">
+   <script type="text/javascript" <if @::__csp_nonce@ not nil> nonce="@::__csp_nonce;literal@"</if>>
 		HTMLArea.loadPlugin("TableOperations");
 		HTMLArea.loadPlugin("ContextMenu");
 		HTMLArea.loadPlugin("LearnAtWU");
    </script>
-    <!-- browser takes a coffee break here -->
-    <script type="text/javascript">
+   <!-- browser takes a coffee break here -->
+   <script type="text/javascript" <if @::__csp_nonce@ not nil> nonce="@::__csp_nonce;literal@"</if>>
 		var parent_object  = null;
 		var editor	   = null;	// to be initialized later [ function init() ]
 
 	/* ---------------------------------------------------------------------- *\
-	   Function    : 
-	   Description : 
+	   Function    :
+	   Description :
 	\* ---------------------------------------------------------------------- */
-	
+
 	function _CloseOnEsc(ev) {
 	// 	ev || (ev = window.event);
 	  if (document.all) {
@@ -44,7 +44,7 @@
 	   Function    : resize_editor
 	   Description : resize the editor when the user resizes the popup
 	\* ---------------------------------------------------------------------- */
-	
+
 	function resize_editor() {  // resize editor to fix window
 		var newHeight;
 		if (document.all) {
@@ -65,13 +65,13 @@
 		   Function    : init
 		   Description : run this code on page load
 		\* ---------------------------------------------------------------------- */
-		
+
 		function init() {
 			parent_object = opener.document.getElementById("@textarea_id@");
-				
+
 			// generate editor and resize it
 			editor = new HTMLArea("editor", config);
-		
+
 			// register the plugins
 			  editor.registerPlugin("TableOperations");
 			  editor.registerPlugin("ContextMenu");
@@ -85,16 +85,16 @@
 			editor._iframe.style.width = "100%";
 			editor._textArea.style.width = "100%";
 			resize_editor();
-		
+
 			editor.doctype = parent_object.doctype;
-		
+
 			// set child window contents and event handlers, after a small delay
 			setTimeout(function() {
 					   editor.setHTML(parent_object.value);
-		
+
 					   // continuously update parent editor window
 					   setInterval(update_parent, 500);
-		
+
 					   // setup event handlers
 		// 			   document.body.onkeypress = _CloseOnEsc;
 		// 			   editor._doc.body.onkeypress = _CloseOnEsc;
@@ -102,12 +102,12 @@
 					   window.onresize = resize_editor;
 				   }, 333);			 // give it some time to meet the new frame
 		}
-		
+
 		/* ---------------------------------------------------------------------- *\
 		   Function    : update_parent
 		   Description : update parent window editor field with contents from child window
 		   \* ---------------------------------------------------------------------- */
-		
+
 		function update_parent() {
 			// use the fast version
 			parent_object.value = editor.getInnerHTML();
@@ -116,7 +116,7 @@
     <style type="text/css"> html, body { height: 100%; margin: 0px; border: 0px; background-color: buttonface; } </style>
   </head>
   <body scroll="no">
-    <script type="text/javascript"<if @::__csp_nonce@ not nil> nonce="@::__csp_nonce;literal@"</if>>
+    <script type="text/javascript"<if @::__csp_nonce@ not nil> nonce="@@::__csp_nonce;literal@@"</if>>
       document.body.addEventListener('load', function (event) {
           setTimeout(function(){init();}, 500);
       }, false);

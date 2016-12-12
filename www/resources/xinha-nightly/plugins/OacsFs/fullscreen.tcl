@@ -18,8 +18,15 @@ switch [lang::user::language -site_wide] {
 }
 
 
+# Add event handlers
 
-ad_return_template
+template::add_event_listener -id "body" -event "load" -script {
+    setTimeout(function(){init();}, 500);
+}
+template::add_event_listener -id "body" -event "load" -script {
+    update_parent();
+}
+
 
 # Local variables:
 #    mode: tcl
