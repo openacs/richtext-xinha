@@ -116,7 +116,7 @@
     <style type="text/css"> html, body { height: 100%; margin: 0px; border: 0px; background-color: buttonface; } </style>
   </head>
   <body scroll="no">
-    <script type="text/javascript"<if @::__csp_nonce@ not nil> nonce="@@::__csp_nonce;literal@@"</if>>
+    <script type="text/javascript"<if @::__csp_nonce@ not nil> nonce="@::__csp_nonce;literal@"</if>>
       document.body.addEventListener('load', function (event) {
           setTimeout(function(){init();}, 500);
       }, false);
