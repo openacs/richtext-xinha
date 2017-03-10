@@ -4,7 +4,7 @@
     <title>Fullscreen HTMLArea</title>
     <script type="text/javascript" <if @::__csp_nonce@ not nil> nonce="@::__csp_nonce;literal@"</if>>
       // the _editor_url is REQUIRED!  don't forget to set it.
-      _editor_url = "/resources/acs-templating/xinha-nightly/";
+      _editor_url = "/resources/richtext-xinha/xinha-nightly/";
       // implicit language will be "en", but let's set it for brevity
       _editor_lang = "de";
     </script>
