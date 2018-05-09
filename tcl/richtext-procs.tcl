@@ -72,7 +72,7 @@ namespace eval ::richtext::xinha {
             }
         }
 
-        set quoted {}
+        set quoted [list]
         foreach e $plugins {lappend quoted '$e'}
         set ::acs_blank_master(xinha.plugins) [join $quoted ", "]
         
