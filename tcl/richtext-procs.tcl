@@ -20,7 +20,7 @@ namespace eval ::richtext::xinha {
     # The Xinha configuration can be tailored via the NaviServer
     # config file:
     #
-    # ns_section ns/server/${server}/acs/richtext-ckeditor
+    # ns_section ns/server/${server}/acs/richtext-xinha
     #        ns_param XinhaVersion   1.5.6
     #        ns_param StandardPlugins TableOperations
     #
