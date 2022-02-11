@@ -8,20 +8,21 @@
     <singleton-p>t</singleton-p>
     <implements-subsite-p>f</implements-subsite-p>
     <inherit-templates-p>f</inherit-templates-p>
-    
-    <version name="0.6" url="http://openacs.org/repository/download/apm/richtext-xinha-0.6.apm">
+
+    <version name="1.0.0" url="http://openacs.org/repository/download/apm/richtext-xinha-1.0.0.apm">
         <owner url="mailto:neumann@wu-wien.ac.at">Gustaf Neumann</owner>
         <summary>Richtext editor plugin for integrating Xinha with acs-templating</summary>
         <maturity>2</maturity>
 
-        <provides url="richtext-xinha" version="0.6"/>
-	<requires url="acs-templating" version="5.10.0"/>
-	<requires url="acs-tcl" version="5.10.0"/>
+        <provides url="richtext-xinha" version="1.0.0"/>
+        <requires url="acs-tcl" version="5.10.0"/>
+        <requires url="acs-templating" version="5.10.0"/>
 
         <callbacks>
         </callbacks>
         <parameters>
-	  <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="XinhaDefaultPlugins"  default="GetHtml CharacterMap ContextMenu ListType TableOperations EditTag LangMarks Abbreviation" description="When xinha is specified as richtext editor (see parameter RichTextEditor) then use the following xinha plugins per default."/>
+            <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="XinhaDefaultPlugins"  default="GetHtml CharacterMap ContextMenu ListType TableOperations EditTag LangMarks Abbreviation" description="When xinha is specified as richtext editor (see parameter RichTextEditor) then use the following xinha plugins per default."/>
+            <parameter scope="instance" datatype="string"  min_n_values="1"  max_n_values="1"  name="XinhaVersion"  description="Version of the Xinha Editor"/>
         </parameters>
 
     </version>
