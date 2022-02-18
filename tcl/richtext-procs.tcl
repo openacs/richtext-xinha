@@ -97,7 +97,7 @@ namespace eval ::richtext::xinha {
             append xinha_options [dict get $options javascript] \n
         }
 
-        set htmlarea_ids '[join $::acs_blank_master__htmlareas "','"]'
+        set editor_ids '[join [list $text_id {*}$::acs_blank_master__htmlareas] "','"]'
 
         #
         # Add the configuration via body script
@@ -106,7 +106,7 @@ namespace eval ::richtext::xinha {
             xinha_options =
             {
                 _editor_lang: "[lang::conn::language]",
-                xinha_editors:  \[ $htmlarea_ids \],
+                xinha_editors:  \[ $editor_ids \],
                 xinha_plugins:  \[ $xinha_plugins \],
                 xinha_config: function(xinha_config)
                 {
