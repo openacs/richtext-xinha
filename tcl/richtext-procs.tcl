@@ -225,10 +225,17 @@ namespace eval ::richtext::xinha {
         set prefix [dict get $resource_info prefix]
 
         if {[dict exists $resource_info cdnHost] && [dict get $resource_info cdnHost] ne ""} {
-            security::csp::require script-src [dict get $resource_info cdnHost]
-            security::csp::require style-src  [dict get $resource_info cdnHost]
-            security::csp::require img-src    [dict get $resource_info cdnHost]
+            security::csp::require connect-src [dict get $resource_info cdnHost]
+            security::csp::require script-src  [dict get $resource_info cdnHost]
+            security::csp::require style-src   [dict get $resource_info cdnHost]
+            security::csp::require img-src     [dict get $resource_info cdnHost]
         }
+
+        #
+        # Add required general directives for content security policies.
+        #
+        security::csp::require script-src 'unsafe-eval'
+        security::csp::require -force script-src 'unsafe-inline'
 
         template::add_body_script -src $prefix/XinhaEasy.js -script $conf
     }
