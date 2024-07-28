@@ -169,11 +169,10 @@ namespace eval ::richtext::xinha {
         # Setup variables for access via CDN vs. local resources.
         #
         set resourceDir [acs_package_root_dir richtext-xinha/www/resources]
-        set resourceUrl /resources/richtext-xinha
         set cdn //s3-us-west-1.amazonaws.com/xinha
 
         if {[file exists $resourceDir/$version]} {
-            set prefix  $resourceUrl/$version/xinha
+            set prefix  /resources/richtext-xinha/$version/xinha
             set cdnHost ""
         } else {
             set prefix $cdn/xinha-$version
