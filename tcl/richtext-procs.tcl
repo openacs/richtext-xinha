@@ -162,7 +162,7 @@ namespace eval ::richtext::xinha {
         # namespaced variables as default.
         #
         if {$version eq ""} {
-            set version ${::richtext::xinha::version}
+            set version $::richtext::xinha::version
         }
 
         #
@@ -193,7 +193,8 @@ namespace eval ::richtext::xinha {
             jsFiles  {} \
             extraFiles {} \
             downloadURLs https://s3-us-west-1.amazonaws.com/xinha/releases/xinha-$version.zip \
-            urnMap {}
+            urnMap {} \
+            installedVersion $version
 
         return $result
     }
@@ -265,10 +266,7 @@ namespace eval ::richtext::xinha {
         set resource_info [::richtext::xinha::resource_info \
                                -version $version]
 
-        ::util::resources::download \
-            -resource_info $resource_info \
-            -version_dir $version
-
+        ::util::resources::download -resource_info $resource_info
         set resourceDir [dict get $resource_info resourceDir]
 
         #
