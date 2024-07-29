@@ -193,7 +193,7 @@ namespace eval ::richtext::xinha {
             extraFiles {} \
             downloadURLs https://s3-us-west-1.amazonaws.com/xinha/releases/xinha-$version.zip \
             urnMap {} \
-            installedVersion $version
+            configuredVersion $version
 
         return $result
     }
