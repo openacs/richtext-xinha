@@ -13,8 +13,7 @@ ad_library {
 }
 
 namespace eval ::richtext::xinha {
-
-    set package_id [apm_package_id_from_key "richtext-xinha"]
+    variable parameter_info
 
     #
     # The Xinha configuration can be tailored via the NaviServer
@@ -24,11 +23,13 @@ namespace eval ::richtext::xinha {
     #        ns_param XinhaVersion   1.5.6
     #        ns_param StandardPlugins TableOperations
     #
-    set ::richtext::xinha::version [parameter::get \
-                                        -package_id $package_id \
-                                        -parameter XinhaVersion \
-                                        -default 1.5.6]
+     set parameter_info {
+         package_key richtext-xinha
+         parameter_name XinhaVersion
+         default_value 1.5.6
+     }
 
+    set package_id [apm_package_id_from_key "richtext-xinha"]
     set ::richtext::xinha::standard_plugins [parameter::get \
                                                  -package_id $package_id \
                                                  -parameter XinhaDefaultPlugins \
@@ -157,12 +158,19 @@ namespace eval ::richtext::xinha {
         from the local filesystem, or from CDN.
 
     } {
+        variable parameter_info
+
         #
         # If no version or Xinha package are specified, use the
-        # namespaced variables as default.
+        # configured version.
         #
         if {$version eq ""} {
-            set version $::richtext::xinha::version
+            dict with parameter_info {
+                set version [::parameter::get_global_value \
+                                 -package_key $package_key \
+                                 -parameter $parameter_name \
+                                 -default $default_value]
+            }
         }
 
         #
@@ -193,6 +201,7 @@ namespace eval ::richtext::xinha {
             extraFiles {} \
             downloadURLs https://s3-us-west-1.amazonaws.com/xinha/releases/xinha-$version.zip \
             urnMap {} \
+            parameterInfo $parameter_info \
             configuredVersion $version
 
         return $result
@@ -215,13 +224,8 @@ namespace eval ::richtext::xinha {
         customization.
 
     } {
-        if {$version eq ""} {
-            set version ${::richtext::xinha::version}
-        }
-
-        set resource_info [::richtext::xinha::resource_info \
-                               -version $version]
-
+        set resource_info [::richtext::xinha::resource_info -version $version]
+        set version [dict $get resource_info configuredVersion]
         set prefix [dict get $resource_info prefix]
 
         if {[dict exists $resource_info cdnHost] && [dict get $resource_info cdnHost] ne ""} {
@@ -254,16 +258,8 @@ namespace eval ::richtext::xinha {
         writable by the web server.
 
     } {
-        #
-        # If no version is specified, use the namespaced variables as
-        # default.
-        #
-        if {$version eq ""} {
-            set version ${::richtext::xinha::version}
-        }
-
-        set resource_info [::richtext::xinha::resource_info \
-                               -version $version]
+        set resource_info [::richtext::xinha::resource_info -version $version]
+        set version [dict get $resource_info configuredVersion]
 
         ::util::resources::download -resource_info $resource_info
         set resourceDir [dict get $resource_info resourceDir]
