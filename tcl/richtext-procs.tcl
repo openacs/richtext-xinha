@@ -200,6 +200,7 @@ namespace eval ::richtext::xinha {
             jsFiles  {} \
             extraFiles {} \
             downloadURLs https://s3-us-west-1.amazonaws.com/xinha/releases/xinha-$version.zip \
+            cspMap {} \
             urnMap {} \
             parameterInfo $parameter_info \
             configuredVersion $version
