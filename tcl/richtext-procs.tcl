@@ -5,27 +5,42 @@ ad_library {
     This script defines the following two procs:
 
        ::richtext-xinha::initialize_widget
-       ::richtext-xinha::render_widgets    
-    
+       ::richtext-xinha::render_widgets
+
     @author Gustaf Neumann
     @creation-date 1 Jan 2016
     @cvs-id $Id$
 }
 
 namespace eval ::richtext::xinha {
-    
+    variable parameter_info
+
+    #
+    # The Xinha configuration can be tailored via the NaviServer
+    # config file:
+    #
+    # ns_section ns/server/${server}/acs/richtext-xinha
+    #        ns_param XinhaVersion   1.5.6
+    #        ns_param StandardPlugins TableOperations
+    #
+     set parameter_info {
+         package_key richtext-xinha
+         parameter_name XinhaVersion
+         default_value 1.5.6
+     }
+
+    set package_id [apm_package_id_from_key "richtext-xinha"]
+    set ::richtext::xinha::standard_plugins [parameter::get \
+                                                 -package_id $package_id \
+                                                 -parameter XinhaDefaultPlugins \
+                                                 -default ""]
+
     ad_proc initialize_widget {
         -form_id
         -text_id
         {-options {}}
     } {
-        
         Initialize an Xinha richtext editor widget.
-        This proc defines finally the global variables
-
-        ::acs_blank_master(xinha.options)
-        ::acs_blank_master(xinha.plugins)
-        
     } {
         ns_log debug "initialize XINHA instance with <$options>"
 
@@ -41,72 +56,74 @@ namespace eval ::richtext::xinha {
         if {[dict exists $options plugins]} {
             set plugins [dict get $options plugins]
         } else {
-            set plugins [parameter::get \
-                             -package_id [apm_package_id_from_key "richtext-xinha"] \
-                             -parameter "XinhaDefaultPlugins" \
-                             -default ""]
-            set pluginsLegacy [parameter::get \
-                                   -package_id [apm_package_id_from_key "acs-templating"] \
-                                   -parameter "XinhaDefaultPlugins" \
-                                   -default ""]
-            
-            if {$pluginsLegacy ne ""} {
-                if {$plugins eq ""} {
-                    #
-                    # We have no per-package config, but got a legacy
-                    # config.
-                    #
-                    set plugins $pluginsLegacy
-                    ns_log warning "richtext-xinha uses legacy parameters from acs-templating;\
-                    	XinhaDefaultPlugins should be set in the package parameters of richtext-xinha, not in acs-templating."
-                } else {
-                    #
-                    # Config for this package and legacy config in
-                    # acs-templating is set, ignore config from
-                    # acs-templating.
-                    #
-                    ns_log warning "richtext-xinha ignores legacy parameters from acs-templating;\
-                    	XinhaDefaultPlugins should be set in the package parameters of richtext-xinha, not in acs-templating;\
-			when done, empty parameter setting for XinhaDefaultPlugins in acs-templating."
-                }
-            }
+            set plugins $::richtext::xinha::standard_plugins
         }
 
-        set quoted [list]
-        foreach e $plugins {lappend quoted '$e'}
-        set ::acs_blank_master(xinha.plugins) [join $quoted ", "]
-        
+        set xinha_plugins [list]
+        set oacs_plugins [list]
+        foreach e $plugins {
+            if {$e in {OacsFs OacsAttach}} {
+                lappend oacs_plugins '$e'
+            } else {
+                lappend xinha_plugins '$e'
+            }
+        }
+        if {[llength $oacs_plugins] > 0} {
+            lappend xinha_plugins \
+                [subst {{ from: '/resources/richtext-xinha/openacs-plugins', load: \[[join $oacs_plugins ,]\] }}]
+        }
+        set xinha_plugins [join $xinha_plugins ,]
+
         set xinha_options ""
         foreach e {width height folder_id fs_package_id script_dir file_types attach_parent_id wiki_p} {
             if {[dict exists $options $e]} {
                 append xinha_options "xinha_config.$e = '[dict get $options $e]';\n"
             }
         }
+
+        # DAVEB find out if there is a key datatype in the form.
+        # We look for a key element in the form and use it e.g. as the
+        # possible parent_id of a potential attachment.
+        if {[info exists ::af_key_name($form_id)]} {
+            set key [template::element get_value $form_id $::af_key_name($form_id)]
+            append xinha_options "xinha_config.key = '$key';\n"
+        }
+
         #
         # Pass as well the actual package_id to xinha (for e.g. plugins)
         #
         append xinha_options "xinha_config.package_id = '[ad_conn package_id]';\n"
 
-        # DAVEB find out if there is a key datatype in the form
-        if {[info exists ::af_key_name($form_id)]} {
-            set key [template::element get_value $form_id $::af_key_name($form_id)]
-            append xinha_options "xinha_config.key = '$key';\n"
-        }
-        
         if {[dict exists $options javascript]} {
             append xinha_options [dict get $options javascript] \n
         }
 
-        #ns_log notice "final ::acs_blank_master(xinha.options):\n$xinha_options"
-        set ::acs_blank_master(xinha.options) $xinha_options
+        set editor_ids '[join [list $text_id {*}$::acs_blank_master__htmlareas] "','"]'
 
         #
-        # add required directives for content security policies
+        # Add the configuration via body script
         #
-        security::csp::require script-src 'unsafe-eval'
-        security::csp::require script-src 'unsafe-inline'
+        set conf [subst {
+            xinha_options =
+            {
+                _editor_lang: "[lang::conn::language]",
+                xinha_editors:  \[ $editor_ids \],
+                xinha_plugins:  \[ $xinha_plugins \],
+                xinha_config: function(xinha_config)
+                {
+                    $xinha_options
+                }
+            }
+        }]
 
-        
+        #
+        # Load the editor and everything necessary to the current page.
+        #
+        ::richtext::xinha::add_editor -conf $conf
+
+        #
+        # do we need render_widgets?
+        #
         return ""
     }
 
@@ -115,70 +132,166 @@ namespace eval ::richtext::xinha {
 
         Render the xinha rich-text widgets. This function is created
         at a time when all rich-text widgets of this page are already
-        initialized. The function is controlled via the global variables
+        initialized. The function is controlled via the global
+        variable ::acs_blank_master(xinha)
 
-           ::acs_blank_master(xinha)
-           ::acs_blank_master(xinha.options)
-           ::acs_blank_master(xinha.plugins)
-           ::acs_blank_master(xinha.params)
-           ::acs_blank_master__htmlareas
-        
     } {
         #
-        # In case no xinha instances are created, or we are on a
-        # mobile browser, which is not supported via xinha, nothing
-        # has to be done (i.e. the plain text area will be shown)
+        # In case no xinha instances are created, nothing has to be
+        # done (i.e. the plain text area will be shown)
         #
-        if {![info exists ::acs_blank_master(xinha)] || [ad_conn mobile_p]} {
+        if {![info exists ::acs_blank_master(xinha)]} {
             return
         }
-        set ::xinha_dir /resources/richtext-xinha/xinha-nightly/
-        set ::xinha_lang [lang::conn::language]
         #
-        # Xinha localization covers 33 languages, removing
-        # the following restriction should be fine.
+        # Since "template::head::add_javascript -src ..." prevents
+        # loading the same resource multiple times, we can perform the
+        # load in the per-widget initialization and we are done here.
         #
-        #if {$::xinha_lang ne "en" && $::xinha_lang ne "de"} {
-        #  set ::xinha_lang en
-        #}
+    }
 
-        # We could add site wide Xinha configurations (.js code) into xinha_params
-        set xinha_params ""
-        if {[info exists ::acs_blank_master(xinha.params)]} {
-            set xinha_params $::acs_blank_master(xinha.params)
+    ad_proc ::richtext::xinha::resource_info {
+        {-version ""}
+    } {
+
+        Get information about available version(s) of Xinha, either
+        from the local filesystem, or from CDN.
+
+    } {
+        variable parameter_info
+
+        #
+        # If no version or Xinha package are specified, use the
+        # configured version.
+        #
+        if {$version eq ""} {
+            dict with parameter_info {
+                set version [::parameter::get_global_value \
+                                 -package_key $package_key \
+                                 -parameter $parameter_name \
+                                 -default $default_value]
+            }
         }
 
-        # Per call configuration
-        set xinha_plugins $::acs_blank_master(xinha.plugins)
-        set xinha_options $::acs_blank_master(xinha.options)
+        #
+        # Setup variables for access via CDN vs. local resources.
+        #
+        set resourceDir [acs_package_root_dir richtext-xinha/www/resources]
+        set cdn //s3-us-west-1.amazonaws.com/xinha
 
-        # HTML ids of the textareas used for Xinha
-        set htmlarea_ids '[join $::acs_blank_master__htmlareas "','"]'
-        
-        template::head::add_script -type text/javascript -script "
-         xinha_editors = null;
-         xinha_init = null;
-         xinha_config = null;
-         xinha_plugins = null;
-         xinha_init = xinha_init ? xinha_init : function() {
-            xinha_plugins = xinha_plugins ? xinha_plugins : 
-              \[$xinha_plugins\];
+        if {[file exists $resourceDir/$version]} {
+            set prefix  /resources/richtext-xinha/$version/xinha
+            set cdnHost ""
+        } else {
+            set prefix $cdn/xinha-$version
+            set cdnHost s3-us-west-1.amazonaws.com
+        }
 
-            // THIS BIT OF JAVASCRIPT LOADS THE PLUGINS, NO TOUCHING  
-            if(!Xinha.loadPlugins(xinha_plugins, xinha_init)) return;
+        #
+        # Return the dict with at least the required fields
+        #
+        lappend result \
+            resourceName "Xinha $version" \
+            resourceDir $resourceDir \
+            cdn $cdn \
+            cdnHost $cdnHost \
+            prefix $prefix \
+            cssFiles {} \
+            jsFiles  {} \
+            extraFiles {} \
+            downloadURLs https://s3-us-west-1.amazonaws.com/xinha/releases/xinha-$version.zip \
+            cspMap {} \
+            urnMap {} \
+            parameterInfo $parameter_info \
+            configuredVersion $version
 
-            xinha_editors = xinha_editors ? xinha_editors :\[ $htmlarea_ids \];
-            xinha_config = xinha_config ? xinha_config() : new Xinha.Config();
-            $xinha_params
-            $xinha_options
-            xinha_editors = 
-                 Xinha.makeEditors(xinha_editors, xinha_config, xinha_plugins);
-            Xinha.startEditors(xinha_editors);
-         }
-         //window.onload = xinha_init;
-      "
-        template::add_body_script -src ${::xinha_dir}XinhaCore.js
-        template::add_body_script -script "xinha_init();"
+        return $result
+    }
+
+    ad_proc ::richtext::xinha::add_editor {
+        {-conf ""}
+        {-version ""}
+        {-order 10}
+    } {
+
+        Add the necessary JavaScript and other files to the current
+        page. The naming is modeled after "add_script", "add_css",
+        ... but is intended to care about everything necessary,
+        including the content security policies. Similar naming
+        conventions should be used for other editors as well.
+
+        This function can be as well used from other packages, such
+        e.g. from the xowiki form-fields, which provide a much higher
+        customization.
+
+    } {
+        set resource_info [::richtext::xinha::resource_info -version $version]
+        set version [dict $get resource_info configuredVersion]
+        set prefix [dict get $resource_info prefix]
+
+        if {[dict exists $resource_info cdnHost] && [dict get $resource_info cdnHost] ne ""} {
+            security::csp::require connect-src [dict get $resource_info cdnHost]
+            security::csp::require script-src  [dict get $resource_info cdnHost]
+            security::csp::require style-src   [dict get $resource_info cdnHost]
+            security::csp::require img-src     [dict get $resource_info cdnHost]
+        }
+
+        #
+        # Add required general directives for content security policies.
+        #
+        security::csp::require script-src 'unsafe-eval'
+        security::csp::require -force script-src 'unsafe-inline'
+
+        template::add_body_script -src $prefix/XinhaEasy.js -script $conf
+    }
+
+    ad_proc -private ::richtext::xinha::download {
+        {-version ""}
+    } {
+
+        Download the Xinha package in the specified version and put
+        it into a directory structure similar to the CDN structure to
+        allow installation of multiple versions. When the local
+        structure is available, it will be used by initialize_widget.
+
+        Notice, that for this automated download, the "unzip" program
+        must be installed and $::acs::rootdir/packages/www must be
+        writable by the web server.
+
+    } {
+        set resource_info [::richtext::xinha::resource_info -version $version]
+        set version [dict get $resource_info configuredVersion]
+
+        ::util::resources::download -resource_info $resource_info
+        set resourceDir [dict get $resource_info resourceDir]
+
+        #
+        # Do we have unzip installed?
+        #
+        set unzip [::util::which unzip]
+        if {$unzip eq ""} {
+            error "can't install Xinha locally; no unzip program found on PATH"
+        }
+
+        #
+        # Do we have a writable output directory under resourceDir?
+        #
+        if {![file isdirectory $resourceDir/$version]} {
+            file mkdir $resourceDir/$version
+        }
+        if {![file writable $resourceDir/$version]} {
+            error "directory $resourceDir/$version is not writable"
+        }
+
+        #
+        # So far, everything is fine, unpack the editor package.
+        #
+        foreach url [dict get $resource_info downloadURLs] {
+            set fn [file tail $url]
+            util::unzip -overwrite \
+                -source $resourceDir/$version/$fn \
+                -destination $resourceDir/$version
+        }
     }
 
 }
