@@ -226,7 +226,7 @@ namespace eval ::richtext::xinha {
 
     } {
         set resource_info [::richtext::xinha::resource_info -version $version]
-        set version [dict $get resource_info configuredVersion]
+        set version [dict get $resource_info configuredVersion]
         set prefix [dict get $resource_info prefix]
 
         if {[dict exists $resource_info cdnHost] && [dict get $resource_info cdnHost] ne ""} {
